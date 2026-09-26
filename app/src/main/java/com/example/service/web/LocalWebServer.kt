@@ -1,5 +1,8 @@
 package com.example.service.web
 
+import android.content.Context
+import java.io.File
+import java.io.FileInputStream
 import com.example.data.model.NetworkDevice
 import com.example.data.model.NetworkStats
 import com.example.service.scanner.WakeOnLan
@@ -20,6 +23,7 @@ import java.net.Socket
 import java.util.concurrent.Executors
 
 class LocalWebServer(
+    private val context: Context,
     private val getDevices: () -> List<NetworkDevice>,
     private val getStats: () -> NetworkStats,
     private val onToggleBlock: (String) -> Unit
@@ -90,6 +94,9 @@ class LocalWebServer(
                 uri == "/" || uri.startsWith("/index") -> {
                     serveDashboard(out)
                 }
+                uri.startsWith("/download/apk") || uri.startsWith("/download-apk") || uri.endsWith(".apk") -> {
+                    serveApk(out)
+                }
                 uri.startsWith("/api/devices") -> {
                     serveDevicesJson(out)
                 }
@@ -123,6 +130,33 @@ class LocalWebServer(
             try {
                 socket.close()
             } catch (_: Exception) {}
+        }
+    }
+
+    private fun serveApk(out: OutputStream) {
+        try {
+            val apkFile = File(context.applicationInfo.sourceDir)
+            if (!apkFile.exists() || !apkFile.canRead()) {
+                send404(out)
+                return
+            }
+            val length = apkFile.length()
+            val header = "HTTP/1.1 200 OK\r\n" +
+                    "Content-Type: application/vnd.android.package-archive\r\n" +
+                    "Content-Disposition: attachment; filename=\"NetPulse-Pro.apk\"\r\n" +
+                    "Content-Length: $length\r\n" +
+                    "Connection: close\r\n\r\n"
+            out.write(header.toByteArray(Charsets.UTF_8))
+            apkFile.inputStream().use { input ->
+                val buffer = ByteArray(64 * 1024)
+                var read: Int
+                while (input.read(buffer).also { read = it } != -1) {
+                    out.write(buffer, 0, read)
+                }
+            }
+            out.flush()
+        } catch (_: Exception) {
+            send404(out)
         }
     }
 
@@ -237,7 +271,8 @@ class LocalWebServer(
                         <h1>NetPulse Pro</h1>
                         <span class="tag">Web Management Console</span>
                     </div>
-                    <div>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="/download/apk" class="btn" style="background: #10b981; color: #ffffff; text-decoration: none; padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">📥 Скачать APK</a>
                         <button class="btn btn-refresh" onclick="location.reload()">↻ Refresh Status</button>
                     </div>
                 </div>

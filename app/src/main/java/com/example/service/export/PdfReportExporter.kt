@@ -219,4 +219,26 @@ class PdfReportExporter(private val context: Context) {
             context.startActivity(chooser)
         } catch (_: Exception) {}
     }
+
+    fun shareApkFile(file: File) {
+        try {
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/vnd.android.package-archive"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, "NetPulse Pro APK Package")
+                putExtra(Intent.EXTRA_TEXT, "Установочный пакет приложения NetPulse Pro APK.")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            val chooser = Intent.createChooser(intent, "Сохранить или отправить APK").apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(chooser)
+        } catch (_: Exception) {}
+    }
 }

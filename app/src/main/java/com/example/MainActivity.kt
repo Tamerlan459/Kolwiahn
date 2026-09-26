@@ -341,6 +341,9 @@ fun MainApp(viewModel: MainViewModel) {
                     viewModel = viewModel,
                     onPdfReady = { file ->
                         viewModel.sharePdf(file)
+                    },
+                    onApkReady = { file ->
+                        viewModel.shareApk(file)
                     }
                 )
             }

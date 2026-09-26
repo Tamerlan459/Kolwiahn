@@ -54,6 +54,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     // Local Web Server
     private val webServer = LocalWebServer(
+        context = application,
         getDevices = { _devicesList.value },
         getStats = { _networkStats.value },
         onToggleBlock = { ip ->
@@ -65,6 +66,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     )
+
+    fun exportApkFile(onApkReady: (File?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val srcApk = File(getApplication<Application>().applicationInfo.sourceDir)
+                if (srcApk.exists()) {
+                    val reportsDir = File(getApplication<Application>().cacheDir, "reports").apply { mkdirs() }
+                    val targetApk = File(reportsDir, "NetPulse-Pro.apk")
+                    srcApk.copyTo(targetApk, overwrite = true)
+                    launch(Dispatchers.Main) {
+                        onApkReady(targetApk)
+                    }
+                } else {
+                    launch(Dispatchers.Main) {
+                        onApkReady(null)
+                    }
+                }
+            } catch (_: Exception) {
+                launch(Dispatchers.Main) {
+                    onApkReady(null)
+                }
+            }
+        }
+    }
 
     // Network Stats State
     private val _networkStats = MutableStateFlow(networkScanner.getLocalNetworkStats())
@@ -388,6 +413,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun sharePdf(file: File) {
         pdfExporter.sharePdfReport(file)
+    }
+
+    fun shareApk(file: File) {
+        pdfExporter.shareApkFile(file)
     }
 
     // Bluetooth actions

@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Language
@@ -65,7 +66,8 @@ import java.io.File
 @Composable
 fun WebServerScreen(
     viewModel: MainViewModel,
-    onPdfReady: (File) -> Unit
+    onPdfReady: (File) -> Unit,
+    onApkReady: (File) -> Unit = { viewModel.shareApk(it) }
 ) {
     val context = LocalContext.current
     val isRunning by viewModel.isWebServerRunning.collectAsStateWithLifecycle()
@@ -319,6 +321,62 @@ fun WebServerScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
                     ) {
                         Text("Export")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // NetPulse Pro APK Export Card
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(NeonGreen.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Android,
+                                contentDescription = null,
+                                tint = NeonGreen,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(text = "Установочный APK (Android)", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                            Text(text = "NetPulse-Pro.apk (Telegram, Диск, файлы)", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+
+                    Button(
+                        onClick = {
+                            viewModel.exportApkFile { file ->
+                                if (file != null) {
+                                    onApkReady(file)
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonGreen)
+                    ) {
+                        Text("Скачать APK", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
                 }
             }
