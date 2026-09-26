@@ -1,0 +1,6 @@
+{
+  "name": "NetPulse Pro",
+  "description": "Advanced Network & Device Scanner with port analysis, Wake-on-LAN, real-time alerts, PDF reports, Bluetooth IoT discovery, and Web remote control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
